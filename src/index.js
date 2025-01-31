@@ -15,7 +15,7 @@ const setupAndStartServer=()=>{
         'support@admin.com',
         'bl2026.a@gmail.com',
         'This is a testing email',
-        'Hey,How are you'
+        'Hey,how are you'
      )
     });
 
