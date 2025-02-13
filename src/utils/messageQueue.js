@@ -6,6 +6,7 @@ const createChannel=async()=>{
         const connection=await amqplib.connect(MESSAGE_BROKER_URL);
         const channel=await connection.createChannel();
         await channel.assertExchange(EXCHANGE_NAME,'direct',false);
+        return channel;
     }
     catch(error){
         throw error;
@@ -14,15 +15,17 @@ const createChannel=async()=>{
 
  const subscribeMessage=async (channel,service,binding_key)=>{
     try{
-    const applicationQueue=await channel.assertQueue('QUEUE_NAME');//it checks whether queue is there or not 
+    const applicationQueue=await channel.assertQueue('QUEUE_NAME');//it checks whether queue is there or not. if not,then it creates the queue. 
 
     channel.bindQueue(applicationQueue.queue,EXCHANGE_NAME,binding_key);
 
     channel.consume(applicationQueue.queue,msg=>{
         console.log('received data');
         console.log(msg.content.toString());
+        const payload=JSON.parse(msg.content.toString());
+        service(payload);
         channel.ack(msg);
-    })
+    });
  }
  catch(error){
         throw error;
@@ -31,7 +34,7 @@ const createChannel=async()=>{
 
   const publishMessage=async (channel,binding_key,message)=>{
     try{
-        await channel.assertQueue(QUEUE_NAME);
+        await channel.assertQueue('QUEUE_NAME');
         await channel.publish(EXCHANGE_NAME,binding_key,Buffer.from(message));   
     }
     catch(error){
